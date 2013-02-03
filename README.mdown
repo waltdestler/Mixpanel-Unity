@@ -1,3 +1,5 @@
+This is the project for the Javascript version of the Mixpanel plugin for Unity 3D. If you prefer to work in C#, then use [this project](https://github.com/waltdestler/Mixpanel-Unity-CSharp).
+
 # Setup #
 
 If you want to track user behavior on your Unity3D application, first download the [mixpanel.unitypackage][mixpanel_package] file.
