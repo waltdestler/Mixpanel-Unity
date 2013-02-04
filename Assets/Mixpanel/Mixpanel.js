@@ -57,9 +57,15 @@ public static class Mixpanel
 			_coroutineRunning = true;
 		}
 
+		if(String.IsNullOrEmpty(DistinctID))
+		{
+			if(!PlayerPrefs.HasKey("mixpanel_distinct_id"))
+				PlayerPrefs.SetString("mixpanel_distinct_id", Guid.NewGuid().ToString());
+			DistinctID = PlayerPrefs.GetString("mixpanel_distinct_id");
+		}
+
 		var propsDict = new Dictionary.<String, Object>();
-		if(!String.IsNullOrEmpty(DistinctID))
-			propsDict.Add("distinct_id", DistinctID);
+		propsDict.Add("distinct_id", DistinctID);
 		propsDict.Add("token", Token);
 		for(var kvp in SuperProperties)
 		{
