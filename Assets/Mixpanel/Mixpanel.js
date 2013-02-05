@@ -19,8 +19,6 @@ public static class Mixpanel
 
 	private var API_URL_FORMAT = "http://api.mixpanel.com/track/?data={0}";
 	private var _coroutineObject : MonoBehaviour;
-	private var _urlQueue = new Queue.<String>();
-	private var _coroutineRunning = false;
 
 	// Call this to send an event to Mixpanel.
 	// eventName: The name of the event. (Can be anything you'd like.)
@@ -49,12 +47,6 @@ public static class Mixpanel
 		{
 			Debug.LogError("Attempted to send an event without setting the Mixpanel.Token variable.");
 			return;
-		}
-
-		if(!_coroutineRunning)
-		{
-			StartCoroutine(SendQueuedEventsCoroutine());
-			_coroutineRunning = true;
 		}
 
 		if(String.IsNullOrEmpty(DistinctID))
@@ -100,7 +92,7 @@ public static class Mixpanel
 			Debug.Log("Sending mixpanel event: " + jsonStr);
 		var jsonStr64 = EncodeTo64(jsonStr);
 		var url = String.Format(API_URL_FORMAT, jsonStr64);
-		_urlQueue.Enqueue(url);
+		StartCoroutine(SendEventCoroutine(url));
 	}
 
 	private function EncodeTo64(toEncode : String) : String
@@ -122,27 +114,15 @@ public static class Mixpanel
 		_coroutineObject.StartCoroutine(coroutine);
 	}
 
-	private function SendQueuedEventsCoroutine() : IEnumerator
+	private function SendEventCoroutine(url : String) : IEnumerator
 	{
-		while(true)
-		{
-			if(_urlQueue.Count > 0)
-			{
-				var url = _urlQueue.Peek();
-				var www = new WWW(url);
-				yield www;
-				if(www.error != null)
-					Debug.LogWarning("Error sending mixpanel event: " + www.error);
-				else if(www.text.Trim() == "0")
-					Debug.LogWarning("Error on mixpanel processing event: " + www.text);
-				else if(EnableLogging)
-					Debug.Log("Mixpanel processed event: " + www.text);
-				_urlQueue.Dequeue();
-			}
-			else
-			{
-				yield;
-			}
-		}
+		var www = new WWW(url);
+		yield www;
+		if(www.error != null)
+			Debug.LogWarning("Error sending mixpanel event: " + www.error);
+		else if(www.text.Trim() == "0")
+			Debug.LogWarning("Error on mixpanel processing event: " + www.text);
+		else if(EnableLogging)
+			Debug.Log("Mixpanel processed event: " + www.text);
 	}
 }
